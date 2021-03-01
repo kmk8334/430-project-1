@@ -3,91 +3,91 @@ const users = {};
 
 // GET request
 const respondJSON = (request, response, status, object) => {
-    const headers = {
-        'Content-Type': 'application/json',
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+  };
 
-    response.writeHead(status, { 'Content-Type': 'application/json' });
-    response.write(JSON.stringify(object));
-    response.end();
+  response.writeHead(status, headers);
+  response.write(JSON.stringify(object));
+  response.end();
 };
 
 // HEAD request - Respond only with metadata about the request
 const respondJSONMeta = (request, response, status) => {
-    const headers = {
-        'Content-Type': 'application/json',
-    };
+  const headers = {
+    'Content-Type': 'application/json',
+  };
 
-    response.writeHead(status, { 'Content-Type': 'application/json' });
-    response.end();
+  response.writeHead(status, headers);
+  response.end();
 };
 
 // GET /getUsers
 const getUsers = (request, response) => {
-    const responseJSON = {
-        users,
-    };
+  const responseJSON = {
+    users,
+  };
 
-    return respondJSON(request, response, 200, responseJSON);
+  return respondJSON(request, response, 200, responseJSON);
 };
 
 // HEAD /getUsers
 const getUsersMeta = (request, response) => respondJSON(request, response, 200);
 
 const addUser = (request, response, body) => {
-    console.dir(body);
+  console.dir(body);
 
-    const responseJSON = {
-        message: 'Name and age are both required',
-    };
+  const responseJSON = {
+    message: 'Name and age are both required',
+  };
 
-    // Validate the name and age exist
-    if(!body.name || !body.age) {
-        responseJSON.id = 'missingParams';
-        return respondJSON(request, response, 400, responseJSON);
-    }
+  // Validate the name and age exist
+  if (!body.name || !body.age) {
+    responseJSON.id = 'missingParams';
+    return respondJSON(request, response, 400, responseJSON);
+  }
 
-    let responseCode = 201;
+  let responseCode = 201;
 
-    if(users[body.name]) {
-        // User already exists
-        responseCode = 204;
-    } else {
-        // User does not exist
-        users[body.name] = {};
-        users[body.name].name = body.name;
-    }
+  if (users[body.name]) {
+    // User already exists
+    responseCode = 204;
+  } else {
+    // User does not exist
+    users[body.name] = {};
+    users[body.name].name = body.name;
+  }
 
-    users[body.name].age = body.age;
+  users[body.name].age = body.age;
 
-    // A new user was created
-    if(responseCode === 201) {
-        responseJSON.message = 'Created Successfully';
-        return respondJSON(request, response, responseCode, responseJSON);
-    }
-
-    // A user was updated
-    responseJSON.message = 'Updated Successfully';
+  // A new user was created
+  if (responseCode === 201) {
+    responseJSON.message = 'Created Successfully';
     return respondJSON(request, response, responseCode, responseJSON);
+  }
+
+  // A user was updated
+  responseJSON.message = 'Updated Successfully';
+  return respondJSON(request, response, responseCode, responseJSON);
 };
 
 const notFound = (request, response) => {
-    const responseJSON = {
-        message: 'The page you are not looking for was not found!',
-        id: 'notFound',
-    };
+  const responseJSON = {
+    message: 'The page you are not looking for was not found!',
+    id: 'notFound',
+  };
 
-    return respondJSON(request, response, 404, responseJSON);
+  return respondJSON(request, response, 404, responseJSON);
 };
 
 const notFoundMeta = (request, response) => respondJSONMeta(request, response, 404);
 
 module.exports = {
-    getUsers,
-    getUsersMeta,
-    addUser,
-    notFound,
-    notFoundMeta,
+  getUsers,
+  getUsersMeta,
+  addUser,
+  notFound,
+  notFoundMeta,
 };
 
 // const respondXML = (request, response, status, object) => {
