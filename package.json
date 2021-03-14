@@ -1,7 +1,7 @@
 {
-  "name": "http-api-assignment-ii",
+  "name": "430-project-1",
   "version": "1.0.0",
-  "description": "Basic API for getting and updating a user list",
+  "description": "Basic API for getting and updating a list of online asynchronous class requirements",
   "main": "./src/server.js",
   "scripts": {
     "start": "node ./src/server.js",
@@ -14,14 +14,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kmk8334/http-api-assignment-ii.git"
+    "url": "git+https://github.com/kmk8334/430-project-1.git"
   },
   "author": "Kevin Kulp",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/kmk8334/http-api-assignment-ii/issues"
+    "url": "https://github.com/kmk8334/430-project-1/issues"
   },
-  "homepage": "https://github.com/kmk8334/http-api-assignment-ii#readme",
+  "homepage": "https://github.com/kmk8334/430-project-1#readme",
   "devDependencies": {
     "eslint": "^7.21.0",
     "eslint-config-airbnb": "^18.2.1",
