@@ -69,22 +69,33 @@
 
     const sendPost = (e, newTaskForm) => {
         e.preventDefault();
+        
+        // TODO: Update documentation
+        const taskAction = newTaskForm.getAttribute('action');
+        const taskMethod = newTaskForm.getAttribute('method');
 
-        const nameAction = newTaskForm.getAttribute('action');
-        const nameMethod = newTaskForm.getAttribute('method');
-
+        // Get a reference to all fields
+        const classField = newTaskForm.querySelector('#classField');
         const nameField = newTaskForm.querySelector('#nameField');
-        const ageField = newTaskForm.querySelector('#ageField');
+        const timeField = newTaskForm.querySelector('#timeField');
+        const linkField = newTaskForm.querySelector('#linkField');
+        const notesField = newTaskForm.querySelector('#notesField');
 
         const xhr = new XMLHttpRequest();
-        xhr.open(nameMethod, nameAction);
+        xhr.open(taskMethod, taskAction);
 
         xhr.setRequestHeader('Accept', 'application/json');
         xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 
         xhr.onload = () => handleResponse(xhr);
 
-        const formData = `name=${nameField.value}&age=${ageField.value}`;
+        const formData = (
+          `class=${classField.value}`
+          + `&name=${nameField.value}`
+          + `&time=${timeField.value}`
+          + `&link=${linkField.value}`
+          + `&notes=${notesField.value}`
+          );
         xhr.send(formData);
 
         return false;
