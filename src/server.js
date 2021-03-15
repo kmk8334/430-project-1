@@ -10,11 +10,11 @@ const urlStruct = {
   GET: {
     '/': htmlHandler.getIndex,
     '/style.css': htmlHandler.getStyle,
-    '/getUsers': jsonHandler.getUsers,
+    '/getTasks': jsonHandler.getTasks,
     notFound: jsonHandler.notFound,
   },
   HEAD: {
-    '/getUsers': jsonHandler.getUsersMeta,
+    '/getTasks': jsonHandler.getTasksMeta,
     notFound: jsonHandler.notFoundMeta,
   },
 };
@@ -39,7 +39,7 @@ const handleHead = (request, response, parsedUrl) => {
 
 const handlePost = (request, response, parsedUrl) => {
   // Verify that the function exists in urlStruct
-  if (parsedUrl.pathname === '/addUser') {
+  if (parsedUrl.pathname === '/addTask') {
     const body = [];
 
     // If an error happens, print to the console and make the response a 400-error
@@ -62,7 +62,7 @@ const handlePost = (request, response, parsedUrl) => {
       console.log('request on end');
       console.dir(bodyParams);
 
-      jsonHandler.addUser(request, response, bodyParams);
+      jsonHandler.addTask(request, response, bodyParams);
     });
   } else {
     jsonHandler.notFound(request, response);
@@ -80,11 +80,6 @@ const onRequest = (request, response) => {
   } else if (request.method === 'HEAD') {
     handleHead(request, response, parsedUrl);
   } else if (request.method === 'POST') {
-    // console.dir(request);
-    // console.log("----------");
-    // console.dir(response);
-    // console.log("----------");
-    // console.dir(parsedUrl);
     handlePost(request, response, parsedUrl);
   } else {
     jsonHandler.notFound(request, response);

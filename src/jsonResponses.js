@@ -1,5 +1,5 @@
-// thanos snaps every time the server crashes (this is only in memory)
-const users = {};
+// JSON object containing tasks
+const tasks = [];
 
 // GET request
 const respondJSON = (request, response, status, object) => {
@@ -22,51 +22,62 @@ const respondJSONMeta = (request, response, status) => {
   response.end();
 };
 
-// GET /getUsers
-const getUsers = (request, response) => {
+// GET /getTasks
+const getTasks = (request, response) => {
   const responseJSON = {
-    users,
+    tasks,
   };
 
   return respondJSON(request, response, 200, responseJSON);
 };
 
-// HEAD /getUsers
-const getUsersMeta = (request, response) => respondJSON(request, response, 200);
+// HEAD /getTasks
+const getTasksMeta = (request, response) => respondJSON(request, response, 200);
 
-const addUser = (request, response, body) => {
+// POST /addTask
+const addTask = (request, response, body) => {
   console.dir(body);
 
   const responseJSON = {
-    message: 'Name and age are both required',
+    message: 'Class, name, and time are required',
   };
 
   // Validate the name and age exist
-  if (!body.name || !body.age) {
+  if (!body.class || !body.name || !body.time) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
 
   let responseCode = 201;
 
-  if (users[body.name]) {
-    // User already exists
+  // If the task ID already exists, update instead
+  if (tasks[body.taskId]) {
     responseCode = 204;
+    // Update the existing properties
+    tasks[body.taskId].class = body.class;
+    tasks[body.taskId].name = body.name;
+    tasks[body.taskId].time = body.time;
+    tasks[body.taskId].notes = body.notes;
   } else {
-    // User does not exist
-    users[body.name] = {};
-    users[body.name].name = body.name;
+    // Create a new task at the end of the task array (assumes no deleting tasks)
+    const newTaskId = tasks.length;
+    tasks[newTaskId] = {
+      taskId: newTaskId,
+      class: body.class,
+      name: body.name,
+      time: body.time,
+      link: body.link,
+      notes: body.notes,
+    };
   }
 
-  users[body.name].age = body.age;
-
-  // A new user was created
+  // A new task was created
   if (responseCode === 201) {
     responseJSON.message = 'Created Successfully';
     return respondJSON(request, response, responseCode, responseJSON);
   }
 
-  // A user was updated
+  // A task was updated
   responseJSON.message = 'Updated Successfully';
   return respondJSON(request, response, responseCode, responseJSON);
 };
@@ -83,90 +94,9 @@ const notFound = (request, response) => {
 const notFoundMeta = (request, response) => respondJSONMeta(request, response, 404);
 
 module.exports = {
-  getUsers,
-  getUsersMeta,
-  addUser,
+  getTasks,
+  getTasksMeta,
+  addTask,
   notFound,
   notFoundMeta,
 };
-
-// const respondXML = (request, response, status, object) => {
-//   response.writeHead(status, { 'Content-Type': 'text/xml' });
-//   console.dir(object);
-//   response.write(object); // Object assumed to be a premade XML string
-//   response.end();
-// };
-
-// const getSuccess = (request, response, params, acceptedTypes) => {
-//   console.dir(request);
-//   // Set the response data
-//   const responseContent = {
-//     message: 'This is a successful response',
-//   };
-//   const status = 200;
-
-//   // Return JSON
-//   return respondJSON(request, response, status, responseContent);
-// };
-
-// const getUsers = (request, response, params, acceptedTypes) => {
-//     // Set the response data
-//     console.dir(request);
-//     const responseContent = {
-//       message: 'This is a successful response',
-//     };
-//     const status = 200;
-
-//     // Return JSON
-//     return respondJSON(request, response, status, responseContent);
-//   };
-
-// const createUser = (request, response, params, acceptedTypes) => {
-//     // Set the response data
-//     const responseContent = {
-//       message: 'Created Successfully',
-//     };
-//     const status = 201;
-
-//     // Return JSON
-//     return respondJSON(request, response, status, responseContent);
-//   };
-
-// const getBadRequest = (request, response, params, acceptedTypes) => {
-//   // Set the response data
-//   let responseContent = {
-//     message: 'This request has the required parameters',
-//   };
-//   let status = 200;
-
-//   // Apply query params
-//   if (!params.valid || params.valid !== 'true') {
-//     responseContent = {
-//       id: 'badRequest',
-//       message: 'Missing valid query parameter set to true',
-//     };
-//     status = 400;
-//   }
-
-//   // Return JSON
-//   return respondJSON(request, response, status, responseContent);
-// };
-
-// const getNotFound = (request, response, params, acceptedTypes) => {
-//   // Set the response data
-//   const responseContent = {
-//     id: 'notFound',
-//     message: 'The page you are looking for was not found.',
-//   };
-//   const status = 404;
-
-//   // Return JSON
-//   return respondJSON(request, response, status, responseContent);
-// };
-
-// module.exports = {
-//   getSuccess,
-//   createUser,
-//   getBadRequest,
-//   getNotFound,
-// };
