@@ -54,6 +54,7 @@ const addTask = (request, response, body) => {
   if (tasks[body.taskId]) {
     responseCode = 204;
     // Update the existing properties
+    tasks[body.isDone].class = (body.isDone ? body.isDone : 'false');
     tasks[body.taskId].class = body.class;
     tasks[body.taskId].name = body.name;
     tasks[body.taskId].time = body.time;
@@ -63,6 +64,7 @@ const addTask = (request, response, body) => {
     const newTaskId = tasks.length;
     tasks[newTaskId] = {
       taskId: newTaskId,
+      isDone: (body.isDone ? body.isDone : 'false'),
       class: body.class,
       name: body.name,
       time: body.time,

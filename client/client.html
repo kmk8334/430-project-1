@@ -40,7 +40,28 @@
         const obj = JSON.parse(xhr.response);
         console.dir(obj);
 
-        responseMessage.textContent = xhr.response;
+        // Clear out the response-message from previous HEAD requests
+        responseMessage.textContent = "";
+        
+        // Create a temporary element to store child row elements
+        let tbody = document.querySelector("tbody");
+        tbody.innerHTML = '';
+        
+        // Append a new row for each element
+        for(let i = 0; i < obj.tasks.length; i++) {
+          let tr = document.createElement("tr");
+          tr.innerHTML = (
+                `<td><input type="checkbox" ${obj.tasks[i].isDone}></td>`
+              + `<td>${obj.tasks[i].taskId}</td>`
+              + `<td>${obj.tasks[i].class}</td>`
+              // If the link exists, transform the name into a hyperlink
+              + `<td>${obj.tasks[i].link ? '<a href="' + obj.tasks[i].link + '">' : ''}Week 1.1 - Course Overview${obj.tasks[i].link ? '</a>' : ''}</td>`
+              + `<td>${obj.tasks[i].time}</td>`
+              + `<td>${obj.tasks[i].notes}</td>`
+            );
+          tr.querySelector("input").addEventListener('click', () => {console.log("TODO: Update post")});
+          tbody.appendChild(tr);
+        }
       } else {
         responseMessage.textContent = "Meta Data Received";
       }
@@ -120,27 +141,26 @@
   <section id="top">
     <h3>Add New Task</h3>
     <form id="newTaskForm" action="/addTask" method="post"> <!-- TODO: POST /addTask -->
-      <label for="class">Class</label>
-      <input id="classField" type="text" name="class" />
-      <label for="name">Name</label>
-      <input id="nameField" type="text" name="name" />
-      <label for="time">Estimated Time</label>
-      <input id="timeField" type="text" name="time" placeholder="hh:mm"/>
+      <label for="class">Class*</label>
+      <input id="classField" type="text" name="class" value="IGME-430" />
+      <label for="name">Name*</label>
+      <input id="nameField" type="text" name="name" value="Week 1.1 - Course Overview"/>
+      <label for="time">Estimated Time*</label>
+      <input id="timeField" type="text" name="time" placeholder="hh:mm" value="00:28"/>
       <label for="link">Link</label>
-      <input id="linkField" type="text" name="link"/>
+      <input id="linkField" type="text" name="link" value="https://mycourses.rit.edu/d2l/le/content/885922/viewContent/7226627/View"/>
       <label for="notes">Notes</label>
-      <input id="notesField" type="text" name="notes"/>
+      <input id="notesField" type="text" name="notes" value="Optional: Link, Notes"/>
       <input type="submit" value="Add Task" />
     </form>
     <form id="getTasksForm" action="/getTasks" method="get">
-      <!-- <select id='urlField'>
-        <option value='/getUsers'>/getUsers</option>
-        <option value='/notReal'>/notReal</option>
+      <select id='urlField'>
+        <option value='/getTasks'>/getTasks</option>
       </select>
       <select id="methodSelect">
         <option value="get">GET</option>
         <option value="head">HEAD</option>
-      </select> -->
+      </select>
       <input type="submit" value="Get Tasks" />
     </form>
   </section>
@@ -161,14 +181,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr class="done">
-        <td><input type="checkbox" checked></td>
-        <td>1</td>
-        <td>IGME-430</td>
-        <td><a href="https://mycourses.rit.edu/d2l/le/content/885922/viewContent/7226627/View">Week 1.1 - Course Overview</a></td>
-        <td>0h 28m</td>
-        <td></td>
-      </tr>
+      <!-- GET /getTasks will insert its response into this body -->
     </tbody>
   </table>
 </body>
