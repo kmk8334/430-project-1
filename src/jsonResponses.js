@@ -32,7 +32,9 @@ const getTasks = (request, response) => {
 };
 
 // HEAD /getTasks
-const getTasksMeta = (request, response) => respondJSON(request, response, 200);
+const getTasksMeta = (request, response) => {
+  respondJSON(request, response, 200);
+};
 
 // POST /addTask
 const addTask = (request, response, body) => {
@@ -50,11 +52,13 @@ const addTask = (request, response, body) => {
 
   let responseCode = 201;
 
+  console.dir(`${body.taskId} | ${body.isDone}`);
+
   // If the task ID already exists, update instead
   if (tasks[body.taskId]) {
     responseCode = 204;
     // Update the existing properties
-    tasks[body.isDone].class = (body.isDone ? body.isDone : 'false');
+    tasks[body.taskId].isDone = (body.isDone ? body.isDone : 'false');
     tasks[body.taskId].class = body.class;
     tasks[body.taskId].name = body.name;
     tasks[body.taskId].time = body.time;

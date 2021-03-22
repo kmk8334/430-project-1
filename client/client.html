@@ -10,33 +10,32 @@
   <script type="text/babel">
     const handleResponse = (xhr, parseResponse) => {
       console.log(xhr);
-      const content = document.querySelector('#content');
 
-      // Get references to the status and message fields
-      const responseStatus = document.querySelector('#response-status');
-      const responseMessage = document.querySelector('#response-message');
-
+      // Output a toast notification based on the response code
       switch(xhr.status) {
         case 200:
         case 201:
         case 204:
-          generateToast("success", xhr.status + (JSON.parse(xhr.response).id ? ": " + JSON.parse(xhr.response).id : ""), JSON.parse(xhr.response).message);
+          // Do not generate a toast if there is no response
+          if(parseResponse) {
+            generateToast(
+              xhr.status + (JSON.parse(xhr.response).id ? ": " + JSON.parse(xhr.response).id : ""), // If the ID exists, display it, otherwise display the response code
+              (JSON.parse(xhr.response).message ? JSON.parse(xhr.response).message : ""), // If the message exists, display it, otherwise display ""
+              "success");
+          }
           break;
         case 400:
         case 404:
-          generateToast("error", xhr.status + ": " + JSON.parse(xhr.response).id, JSON.parse(xhr.response).message);
+          generateToast(xhr.status + ": " + JSON.parse(xhr.response).id, JSON.parse(xhr.response).message, "error");
           break;
         default:
-          
+        generateToast("Error", "Unexpected response code", "error");
           break;
       }
 
       if(parseResponse) {
         const obj = JSON.parse(xhr.response);
         console.dir(obj);
-
-        // Clear out the response-message from previous HEAD requests
-        responseMessage.textContent = "";
         
         // Create a temporary element to store child row elements
         let tbody = document.querySelector("tbody");
@@ -46,19 +45,23 @@
         for(let i = 0; i < obj.tasks.length; i++) {
           let tr = document.createElement("tr");
           tr.innerHTML = (
-                `<td><input type="checkbox" ${obj.tasks[i].isDone}></td>`
+                `<td><input type="checkbox" ${obj.tasks[i].isDone === 'true' ? "checked" : ""}></td>`
               + `<td>${obj.tasks[i].taskId}</td>`
               + `<td>${obj.tasks[i].class}</td>`
               // If the link exists, transform the name into a hyperlink
-              + `<td>${obj.tasks[i].link ? '<a href="' + obj.tasks[i].link + '">' : ''}Week 1.1 - Course Overview${obj.tasks[i].link ? '</a>' : ''}</td>`
+              + `<td>${obj.tasks[i].link ? '<a href="' + obj.tasks[i].link + '">' : ''}${obj.tasks[i].name}${obj.tasks[i].link ? '</a>' : ''}</td>`
               + `<td>${obj.tasks[i].time}</td>`
               + `<td>${obj.tasks[i].notes}</td>`
             );
-          tr.querySelector("input").addEventListener('click', () => {console.log("TODO: Update post")});
+          tr.querySelector("input").addEventListener('click', (e) => {
+            let task = obj.tasks[i];
+            let isDone = e.target.checked;
+            sendPost(e, isDone, task.taskId, task.class, task.name, task.time, task.link, task.notes);
+          });
           tbody.appendChild(tr);
         }
       } else {
-        responseMessage.textContent = "Meta Data Received";
+        generateToast("success", "Meta Data Received", "");
       }
     };
 
@@ -83,10 +86,38 @@
       return false;
     };
 
-    const sendPost = (e, newTaskForm) => {
-        e.preventDefault();
+    const sendPost = (e, isDone, taskId, classValue, nameValue, timeValue, linkValue, notesValue) => {
+        const taskAction = newTaskForm.getAttribute('action');
+        const taskMethod = newTaskForm.getAttribute('method');
+
+        console.log(taskAction);
+        console.log(taskMethod);
         
-        // TODO: Update documentation
+        const xhr = new XMLHttpRequest();
+        xhr.open(taskMethod, taskAction);
+
+        xhr.setRequestHeader('Accept', 'application/json');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+        xhr.onload = () => handleResponse(xhr);
+
+        const formData = (
+          `class=${classValue}`
+          + `&name=${nameValue}`
+          + `&time=${timeValue}`
+          + `&link=${linkValue}`
+          + `&notes=${notesValue}`
+          + `&isDone=${isDone}`
+          + `&taskId=${taskId}`
+          );
+        xhr.send(formData);
+
+        return false;
+    };
+
+    const sendPostForm = (e, newTaskForm) => {
+      e.preventDefault();
+        
         const taskAction = newTaskForm.getAttribute('action');
         const taskMethod = newTaskForm.getAttribute('method');
 
@@ -97,22 +128,7 @@
         const linkField = newTaskForm.querySelector('#linkField');
         const notesField = newTaskForm.querySelector('#notesField');
 
-        const xhr = new XMLHttpRequest();
-        xhr.open(taskMethod, taskAction);
-
-        xhr.setRequestHeader('Accept', 'application/json');
-        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-
-        xhr.onload = () => handleResponse(xhr);
-
-        const formData = (
-          `class=${classField.value}`
-          + `&name=${nameField.value}`
-          + `&time=${timeField.value}`
-          + `&link=${linkField.value}`
-          + `&notes=${notesField.value}`
-          );
-        xhr.send(formData);
+        sendPost(e, false, null, classField.value, nameField.value, timeField.value, linkField.value, notesField.value);
 
         return false;
     };
@@ -120,7 +136,7 @@
     const init = () => {
       // Set up the Add User button to send a POST request
       const newTaskForm = document.querySelector('#newTaskForm');
-      const addTask = (e) => sendPost(e, newTaskForm);
+      const addTask = (e) => sendPostForm(e, newTaskForm);
       newTaskForm.addEventListener('submit', addTask);
 
       // Set up the Get User button to send a request
@@ -129,56 +145,89 @@
       getTasksForm.addEventListener('submit', getTasks);
     };
 
+    // Set the header and body of the toast notification to the content,
+    // then show it in the top-right corner
+    const generateToast = (header, body, toastType) => {
+      $('#toast-header-content').text(header);
+      $('#toast-body-content').text(body);
+      $('.toast').toast('show');
+    };
+
     window.onload = init;
   </script>
 </head>
-<body>
-  <section id="top">
-    <h3>Add New Task</h3>
-    <form id="newTaskForm" action="/addTask" method="post"> <!-- TODO: POST /addTask -->
-      <label for="class">Class*</label>
-      <input id="classField" type="text" name="class" value="IGME-430" />
-      <label for="name">Name*</label>
-      <input id="nameField" type="text" name="name" value="Week 1.1 - Course Overview"/>
-      <label for="time">Estimated Time*</label>
-      <input id="timeField" type="text" name="time" placeholder="hh:mm" value="00:28"/>
-      <label for="link">Link</label>
-      <input id="linkField" type="text" name="link" value="https://mycourses.rit.edu/d2l/le/content/885922/viewContent/7226627/View"/>
-      <label for="notes">Notes</label>
-      <input id="notesField" type="text" name="notes" value="Optional: Link, Notes"/>
-      <input type="submit" value="Add Task" />
-    </form>
-    <form id="getTasksForm" action="/getTasks" method="get">
-      <select id='urlField'>
-        <option value='/getTasks'>/getTasks</option>
-      </select>
-      <select id="methodSelect">
-        <option value="get">GET</option>
-        <option value="head">HEAD</option>
-      </select>
-      <input type="submit" value="Get Tasks" />
-    </form>
-  </section>
-  <section id="content">
-    <h1 id="response-status"></h1>
-    <p id="response-message"></p>
-  </section>
-
-  <table class="table">
-    <thead>
-      <tr>
-        <td></td>
-        <td>Task #</td>
-        <td>Class</td>
-        <td>Name</td>
-        <td>Est. Time</td>
-        <td>Notes</td>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- GET /getTasks will insert its response into this body -->
-    </tbody>
-  </table>
+<body class="container">
+  <div class="body-wrapper row">
+    <section id="top" class="row">
+      <div class="col-4 col-offset-2">
+        <form id="newTaskForm" action="/addTask" method="post">
+          <h3>Add New Task</h3>
+          <div class="form-group">  
+            <label for="class">Class*</label>
+            <input id="classField" class="form-control" type="text" name="class" value="IGME-430" />
+          </div>
+          <div class="form-group">  
+            <label for="name">Name*</label>
+            <input id="nameField"  class="form-control" type="text" name="name" value="Week 1.1 - Course Overview"/>
+          </div>
+          <div class="form-group">  
+            <label for="time">Estimated Time*</label>
+            <input id="timeField"  class="form-control" type="text" name="time" placeholder="hh:mm" value="00:28"/>
+          </div>
+          <div class="form-group">  
+            <label for="link">Link</label>
+            <input id="linkField" class="form-control" type="text" name="link" value="https://mycourses.rit.edu/d2l/le/content/885922/viewContent/7226627/View"/>
+          </div>
+          <div class="form-group">  
+            <label for="notes">Notes</label>
+            <input id="notesField" class="form-control" type="text" name="notes" value="Optional: Link, Notes"/>
+          </div>
+          <button type="submit" class="btn btn-primary mt-3">Add Task</button>
+        </form>
+      </div>
+      <div class="col-4">
+        <form id="getTasksForm" action="/getTasks" method="get">
+          <h3>Call API for Tasks</h3>
+          <div class="form-group"> 
+            <label for="urlField">API Endpoint</label>
+            <select id='urlField' class="form-select">
+              <option value='/getTasks'>/getTasks</option>
+            </select>
+          </div>
+          <div class="form-group">  
+            <label for="queryField">Class Query</label>
+            <input id="queryField" class="form-control" type="text" name="link" value="IGME-430"/>
+          </div>
+          <div class="form-group">
+            <label for="methodSelect">Request Method</label>
+            <select id="methodSelect" class="form-select">
+              <option value="get">GET</option>
+              <option value="head">HEAD</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary mt-3">Get Tasks</button>
+        </form>
+      </div>
+    </section>
+    
+    <div>
+      <table class="table col-8 col-offset-2">
+        <thead>
+          <tr>
+            <td></td>
+            <td>Task #</td>
+            <td>Class</td>
+            <td>Name</td>
+            <td>Est. Time</td>
+            <td>Notes</td>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- GET /getTasks will insert its response into this body -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- Toast notification in the top-right corner -->
   <div aria-live="polite" aria-atomic="true" id="toast-container">

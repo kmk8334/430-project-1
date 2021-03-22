@@ -3,11 +3,19 @@ html, body {
   width: 100%;
   margin: 0;
   padding: 0;
+  background-color: #E0FFFF;
 }
 
-#top {
-  text-align: center;
-  margin: 0 auto;
+.body-wrapper {
+  background-color: white;
+  border-left: 2px solid gray;
+  border-right: 2px solid gray;
+  box-shadow: 0px 0px 10px 10px grey;
+}
+
+form {
+  border: solid #f7f7f9;
+  padding: 2rem;
 }
 
 #top h1 {
