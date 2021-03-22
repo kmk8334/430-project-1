@@ -3,10 +3,10 @@
 <head>
   <title>Our simple HTTP server</title>
   <!-- Bootstrap CSS -->
-  <link href="/bootstrap.min.css" rel="stylesheet">
+  <link href="/resources/bootstrap/bootstrap.min.css" rel="stylesheet">
   <!-- Custom CSS -->
   <link rel="stylesheet" type="text/css" href="/style.css">
-  <script src="/browser.min.js"></script>
+  <script src="/resources/babel/browser.min.js"></script>
   <script type="text/babel">
     const handleResponse = (xhr, parseResponse) => {
       const content = document.querySelector('#content');
@@ -184,7 +184,24 @@
       <!-- GET /getTasks will insert its response into this body -->
     </tbody>
   </table>
+
+  <!-- Toast notification in the top-right corner -->
+  <div aria-live="polite" aria-atomic="true" id="toast-container">
+    <div class="toast" data-autohide="false" data-delay=50000>
+      <div class="toast-header">
+        <!-- <img src="..." class="rounded mr-2" alt="..."> -->
+        <strong class="mr-auto" id="toast-header-content">Server Response</strong>
+      </div>
+      <div class="toast-body" id="toast-body-content">
+        Hello, world! This is a toast message.
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 <!-- JavaScript Bundle with Popper -->
-<script src="/bundle.min.js"></script>
+<script src="/resources/jquery/slim.min.js"></script>
+<script src="/resources/ajax/popper.min.js"></script>
+<script src="/resources/bootstrap/bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="/src/toastNotifications.js"></script>
