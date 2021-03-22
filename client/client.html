@@ -9,6 +9,7 @@
   <script src="/resources/babel/browser.min.js"></script>
   <script type="text/babel">
     const handleResponse = (xhr, parseResponse) => {
+      console.log(xhr);
       const content = document.querySelector('#content');
 
       // Get references to the status and message fields
@@ -17,19 +18,13 @@
 
       switch(xhr.status) {
         case 200:
-          
-          break;
         case 201:
-          
-          break;
         case 204:
-          
+          generateToast("success", xhr.status + (JSON.parse(xhr.response).id ? ": " + JSON.parse(xhr.response).id : ""), JSON.parse(xhr.response).message);
           break;
         case 400:
-          
-          break;
         case 404:
-          
+          generateToast("error", xhr.status + ": " + JSON.parse(xhr.response).id, JSON.parse(xhr.response).message);
           break;
         default:
           
